@@ -4,9 +4,9 @@ In homework I1 you will use third-party LLM APIs, and in the group project you w
 To receive credit for this lab, show your work to the TA during recitation.
 
 ## Deliverables
-- [ ] Use an API key to invoke an LLM API and generate a schema-enforced JSON travel itinerary.
-- [ ] Run the API endpoint with the LLM call implemented and demonstrate that it works using an example invocation.
-- [ ] Commit your code without committing your credentials. Explain to the TA why hard-coding credentials is a bad idea, and explain any remedial steps you might take should credentials accidentally be leaked. 
+- [x] Use an API key to invoke an LLM API and generate a schema-enforced JSON travel itinerary.
+- [x] Run the API endpoint with the LLM call implemented and demonstrate that it works using an example invocation.
+- [x] Commit your code without committing your credentials. Explain to the TA why hard-coding credentials is a bad idea, and explain any remedial steps you might take should credentials accidentally be leaked. 
 
 ## Getting started
 Clone the starter code from this Git repository
@@ -38,6 +38,41 @@ The starter code hardcodes credentials in the code. This is a bad practice.
 Research and discuss best practices, such as never hard-code credentials, never commit credentials to Git, rotate secrets regularly, encrypt your secrets at rest/in-transit if possible, practice least-access privilege on machines where your credentials are stored as environment variables or within local files.
 
 Rewrite the code to load credentials from a file or an environment variable and commit the code without the credentials.
+
+### Why Hard-coding Credentials is Bad
+
+Hard-coding credentials in source code is dangerous because:
+
+- Credentials get committed to Git and become visible to anyone with repo access
+- Once in Git history, credentials stay there even if you delete them later
+- Sharing code exposes credentials in pull requests and code reviews
+- Can lead to unauthorized API usage, unexpected costs, and data breaches
+
+### What to Do if Credentials are Leaked
+
+Accidentally commit credentials:
+
+1. Revoke the API key immediately from the provider console
+2. Generate a new key to replace it
+3. Remove credentials from code
+4. Clean Git history using `git filter-branch` or `git filter-repo`
+5. Force push after warning your team
+
+Prevent future leaks by:
+- Adding `.env` to `.gitignore` (already done here)
+- Using pre-commit hooks to scan for secrets
+- Reviewing code before committing
+
+### Best Practices
+
+- Use environment variables instead of hard-coding
+- Never commit `.env` files to Git
+- Use `.env.example` as a template without real values
+- Refresh API keys
+- Use different keys for dev/qa/prod environments
+- Grant minimum necessary permissions to API keys (access controls)
+- Use secrets services for production (AWS Secrets Manager, etc.)
+- Monitor API usage for unusual activity
 
 ## Implement the call to the LLM
 Using LiteLLM, implement the logic in analyze.py to call a an LLM. We suggest `groq/llama-3.3-70b-versatile` but you are free to use others. 

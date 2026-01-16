@@ -1,27 +1,55 @@
 import json
-import os
 from typing import Any, Dict
-from litellm import completion
+from google import genai
 
-# You can replace these with other models as needed but this is the one we suggest for this lab.
-MODEL = "groq/llama-3.3-70b-versatile"
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
-api_key = "hardcoded API_KEY HERE"
+MODEL = "gemini-3-flash-preview"
+
+client = genai.Client()
+
+def validate_schema(data: Dict[str, Any]) -> None:
+    required_fields = ["destination", "price_range", "ideal_visit_times", "top_attractions"]
+    for field in required_fields:
+        if field not in data:
+            raise ValueError(f"Missing required field: {field}")
 
 
 def get_itinerary(destination: str) -> Dict[str, Any]:
-    """
-    Returns a JSON-like dict with keys:
-      - destination
-      - price_range
-      - ideal_visit_times
-      - top_attractions
-    """
-    # implement litellm call here to generate a structured travel itinerary for the given destination
+    prompt = f"""Generate a travel itinerary in JSON format with the following exact schema:
 
-    # See https://docs.litellm.ai/docs/ for reference.
+{{
+  "destination": "",
+  "price_range": "",
+  "ideal_visit_times": ["<time period 1>", "<time period 2>", ......],
+  "top_attractions": ["<attraction 1>", "<attraction 2>", ......]
+}}
 
-    data = ...
+Destination: {destination}
+
+Return ONLY valid JSON. Do not include any explanations, markdown formatting, or code blocks."""
     
-
-    return data
+    try:
+        response = client.models.generate_content(
+            model=MODEL,
+            contents=prompt,
+        )
+        
+        text = response.text.strip()
+        if text.startswith("```"):
+            text = text.split("```")[1].strip()
+            if text.startswith("json"):
+                text = text[4:].strip()
+        
+        data = json.loads(text)
+        validate_schema(data)
+        return data
+        
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Invalid JSON: {e}")
+    except Exception as e:
+        raise ValueError(f"Error: {e}")
